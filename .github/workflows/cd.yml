@@ -1,0 +1,28 @@
+name: CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Set up HashiCorp Vault
+        uses: hashicorp/setup-vault@v2
+        with:
+          vault_version: '1.11.0'
+
+      - name: Retrieve secrets from Vault
+        id: vault
+        run: |
+          vault kv get -field=my-secret kv/my-secret-path > secret.txt
+        
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl apply -f k8s/deployment.yaml
